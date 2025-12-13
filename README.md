@@ -17,14 +17,6 @@ and cryptographic core implemented in **C (DLL via ctypes)**.
 - C — encryption, master-key validation
 - Communication via `ctypes` and DLL
 
-## 🖥️ Screenshots
-![Login](screenshots/login.png)
-![Main](screenshots/main.png)
-
-## 🛠️ Build C core
-```bash
-gcc -shared -o manager.dll manager.c
-
 ## ▶️ Run
 python GUI.py
 
@@ -32,3 +24,11 @@ python GUI.py
 
 This project is for educational purposes.
 Encryption algorithm is simplified (XOR).
+
+## 🖥️ Screenshots
+![Login](screenshots/login.png)
+![Main](screenshots/main.png)
+
+## 🛠️ Build C core
+```bash
+gcc -shared -o manager.dll manager.c

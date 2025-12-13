@@ -32,9 +32,8 @@ Encryption algorithm is simplified (XOR).
 ![Add Password](screenshots/4.png)
 
 ## 🛠️ Build C core
-```bash
 gcc -shared -o manager.dll manager.c
-<<<<<<< HEAD
+
 
 ## ▶️ Run
 python GUI.py
@@ -43,5 +42,4 @@ python GUI.py
 
 This project is for educational purposes.
 Encryption algorithm is simplified (XOR).
-=======
->>>>>>> f2283a73c94a1dd1e9afb3ddf242e058a6ea19ef
+

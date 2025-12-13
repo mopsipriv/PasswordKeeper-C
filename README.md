@@ -25,10 +25,10 @@ and cryptographic core implemented in **C (DLL via ctypes)**.
 ```bash
 gcc -shared -o manager.dll manager.c
 
-▶️ Run
+## ▶️ Run
 python GUI.py
 
-⚠️ Disclaimer
+## ⚠️ Disclaimer
 
 This project is for educational purposes.
 Encryption algorithm is simplified (XOR).

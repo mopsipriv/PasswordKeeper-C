@@ -18,17 +18,19 @@ and cryptographic core implemented in **C (DLL via ctypes)**.
 - Communication via `ctypes` and DLL
 
 ## 🖥️ Screenshots
-![Login](screenshots/login.png)
-![Main](screenshots/main.png)
+![Login](screenshots/1.png)
+![Master-key](screenshots/2.png)
+![Main](screenshots/3.png)
+![Add Password](screenshots/4.png)
 
 ## 🛠️ Build C core
 ```bash
 gcc -shared -o manager.dll manager.c
 
-▶️ Run
+## ▶️ Run
 python GUI.py
 
-⚠️ Disclaimer
+## ⚠️ Disclaimer
 
 This project is for educational purposes.
 Encryption algorithm is simplified (XOR).

@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import ctypes
 import os
+import ast
 
 PASSWORD_FILE = "passwords.txt"
 DELIMITER = " | " 
@@ -16,6 +17,7 @@ try:
     c_lib.check_master_key.argtypes = [ctypes.c_char_p]
     c_lib.check_master_key.restype = ctypes.c_int
     c_lib.xor_encrypt_decrypt.argtypes = [ctypes.c_char_p]
+    c_lib.randomPasswordGeneration.argtypes = [ctypes.c_int, ctypes.c_char_p]
 
     print("C in working now (manager.dll).")
 except Exception as e:
@@ -45,7 +47,7 @@ def load_passwords(treev):
                 line = line.strip()
                 if not line: continue
                 parts = line.split(DELIMITER)
-                if len(parts) == 3:
+                if len(parts) >= 3:
                     tag = "Odd" if i % 2 == 0 else "Even"
                     treev.insert("", "end", values=tuple(parts), tags=(tag,))
     except Exception as e:
@@ -149,7 +151,7 @@ def submit(login_window):
 def mainApp():
     main_window = Toplevel(window)
     main_window.title("Menu")
-    main_window.geometry("800x500")
+    main_window.geometry("900x600")
     main_window.configure(bg=FRAME_BG)
     sidebar = Frame(main_window, bg=FRAME_BG, width=150)
     sidebar.pack(side=LEFT, fill=Y)
@@ -157,7 +159,7 @@ def mainApp():
     def add_info():
         info_window = Toplevel(main_window)
         info_window.title("Add Password")
-        info_window.geometry("400x250")
+        info_window.geometry("400x350")
         info_window.configure(bg=FRAME_BG)
         info_frame = Frame(info_window, bg=FRAME_BG, padx=20, pady=20)
         info_frame.pack(expand=True, fill=BOTH)
@@ -176,10 +178,16 @@ def mainApp():
         entry_password = Entry(info_frame, bg=INPUT_BG, fg=TEXT_COLOR, width=30)
         entry_password.grid(row=2, column=1, pady=5)
 
+        lbl_category = Label(info_frame, text="Category:", bg=FRAME_BG, fg=TEXT_COLOR)
+        lbl_category.grid(row=3, column=0, sticky='w', pady=5)
+        entry_category = Entry(info_frame, bg=INPUT_BG, fg=TEXT_COLOR, width=30)
+        entry_category.grid(row=3, column=1, pady=5)
+
         def save_and_encrypt():
             site = entry_website.get()
             email = entry_email.get()
             password = entry_password.get()
+            category=entry_category.get()
 
             if not c_lib:
                 messagebox.showerror("Error", "DLL doesnt work.")
@@ -191,7 +199,7 @@ def mainApp():
 
             i = len(treev.get_children())
             tag = "Odd" if i % 2 == 0 else "Even"
-            treev.insert("", "end", values=(site, email, encrypted_data), tags=(tag,))
+            treev.insert("", "end", values=(site, email, encrypted_data,category), tags=(tag,))
             
             save_passwords(treev)
             
@@ -202,7 +210,7 @@ def mainApp():
         
         btn_submit_info = Button(info_frame, text="Add Password", bg=SUCCESS_COLOR, fg=TEXT_COLOR, 
                                  width=20, command=save_and_encrypt) 
-        btn_submit_info.grid(row=3, column=0, columnspan=2, pady=15)
+        btn_submit_info.grid(row=4, column=0, columnspan=2, pady=15)
         
     def edit_info():
         edited_info=treev.selection()
@@ -214,7 +222,7 @@ def mainApp():
 
         edit_window=Toplevel(main_window)
         edit_window.title("Edit")
-        edit_window.geometry("300x200")
+        edit_window.geometry("400x350")
         edit_window.configure(bg=FRAME_BG)
 
         frame = Frame(edit_window, bg=FRAME_BG, padx=20, pady=20)
@@ -235,17 +243,23 @@ def mainApp():
         entry_password.grid(row=2, column=1, pady=5)
         entry_password.insert(0, values[2])
 
+        Label(frame, text="Category:", bg=FRAME_BG, fg=TEXT_COLOR).grid(row=3, column=0, sticky="w", pady=5)
+        entry_category = Entry(frame, bg=INPUT_BG, fg=TEXT_COLOR, width=30)
+        entry_category.grid(row=3, column=1, pady=5)
+        entry_category.insert(0, values[3] if len(values) > 3 else "")
+
         def save_changes():
             new_w = entry_website.get()
             new_e = entry_email.get()
             new_p = entry_password.get()
+            new_c= entry_category.get()
             
-            treev.item(item, values=(new_w, new_e, new_p))
+            treev.item(item, values=(new_w, new_e, new_p, new_c))
             save_passwords(treev) 
             edit_window.destroy()
 
         Button(frame, text="Save changes", bg=SUCCESS_COLOR, fg=TEXT_COLOR,
-            width=20, command=save_changes).grid(row=3, column=0, columnspan=2, pady=15)
+            width=20, command=save_changes).grid(row=4, column=0, columnspan=2, pady=15)
 
     def delete_info():
         selected_info = treev.selection()
@@ -304,7 +318,7 @@ def mainApp():
             return
 
         try:
-            encrypted_bytes = eval(encrypted_password_str)
+            encrypted_bytes = ast.literal_eval(encrypted_password_str)
         except (ValueError, SyntaxError, NameError):
             messagebox.showerror("Error", "Invalid encrypted format. Cannot decrypt.")
             return
@@ -340,7 +354,58 @@ def mainApp():
         Label(view_frame, text="Password:", bg=FRAME_BG, fg=TEXT_COLOR, font=("Arial", 12)).grid(row=2, column=0, sticky='w', padx=5, pady=2)
         Label(view_frame, text=decrypted_password, bg=FRAME_BG, fg=SUCCESS_COLOR, font=("Arial", 14, "bold")).grid(row=2, column=1, sticky='w', pady=10)
 
-        Button(view_frame, text="Close", bg=DANGER_COLOR, fg=TEXT_COLOR, width=10, command=view_window.destroy).grid(row=3, column=0, columnspan=2, pady=10)
+        Label(view_frame, text="Category:", bg=FRAME_BG, fg=TEXT_COLOR, font=("Arial", 12)).grid(row=3, column=0, sticky='w', padx=5, pady=2)
+        Label(view_frame, text=values[3], bg=FRAME_BG, fg=SUCCESS_COLOR, font=("Arial", 14, "bold")).grid(row=3, column=1, sticky='w', pady=10)
+
+        Button(view_frame, text="Close", bg=DANGER_COLOR, fg=TEXT_COLOR, width=10, command=view_window.destroy).grid(row=4, column=0, columnspan=2, pady=10)
+
+    
+    def generate_pass():
+        generate_window = Toplevel(main_window)
+        generate_window.title("Generate Password")
+        generate_window.geometry("350x120")
+        generate_window.configure(bg=FRAME_BG)
+
+        generate_info = Entry(
+            generate_window,
+            bg=INPUT_BG,
+            fg=TEXT_COLOR, 
+            readonlybackground=INPUT_BG,
+            disabledforeground=TEXT_COLOR, 
+            width=25,
+            font=("Consolas", 11),
+            state="readonly"
+        )
+        generate_info.grid(column=0, row=0, padx=10, pady=20)
+
+        def on_generate_click():
+            if not c_lib:
+                messagebox.showerror("Error", "DLL not found")
+                return
+
+            length = 15
+            buf = ctypes.create_string_buffer(length + 1)
+            c_lib.randomPasswordGeneration(length, buf)
+
+            pwd_result = buf.value.decode("utf-8")
+
+            generate_info.config(state="normal")
+            generate_info.delete(0, END)
+            generate_info.insert(0, pwd_result)
+            generate_info.config(state="readonly")
+
+        btn_gen_inside = Button(
+            generate_window,
+            text="Generate",
+            bg=SUCCESS_COLOR,
+            fg=TEXT_COLOR,
+            width=10,
+            command=on_generate_click
+        )
+        btn_gen_inside.grid(row=0, column=1, padx=5)
+
+
+
 
 
     btn_add = Button(sidebar, text="Add", bg=SUCCESS_COLOR, fg=TEXT_COLOR, width=20, command=add_info)
@@ -353,6 +418,8 @@ def mainApp():
     btn_view.grid(row=3,column=0)
     btn_search=Button(sidebar,text="Search",bg=SUCCESS_COLOR,fg=TEXT_COLOR,width=20,command=search_info)
     btn_search.grid(row=4,column=0)
+    btn_generate=Button(sidebar,text="Generate Password",bg=SUCCESS_COLOR,fg=TEXT_COLOR,width=20,command=generate_pass)
+    btn_generate.grid(row=5,column=0)
 
 
     style = ttk.Style()
@@ -375,16 +442,18 @@ def mainApp():
 
     treev.configure(yscrollcommand=verscrlbar.set)
 
-    treev["columns"] = ("1", "2", "3")
+    treev["columns"] = ("1", "2", "3","4")
     treev["show"] = "headings"
 
     treev.column("1", width=200, anchor='w')
     treev.column("2", width=200, anchor='w')
     treev.column("3", width=150, anchor='w')
+    treev.column("4", width=150,anchor='w' )
 
     treev.heading("1", text="Website")
     treev.heading("2", text="Email / Login")
     treev.heading("3", text="Password (Encrypted)") 
+    treev.heading("4", text="Category")
 
     
     treev.tag_configure("Odd", background=FRAME_BG, foreground=TEXT_COLOR)

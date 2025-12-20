@@ -11,6 +11,7 @@ and cryptographic core implemented in **C (DLL via ctypes)**.
 - Encrypted local storage
 - Treeview-based UI
 - Separation of GUI and core logic
+- Added categories for stored passwords
 
 ## 🧠 Architecture
 - Python — UI, logic, file handling
@@ -32,7 +33,7 @@ Encryption algorithm is simplified (XOR).
 ![Add Password](screenshots/4.png)
 
 ## 🛠️ Build C core
-gcc -shared -o manager.dll manager.c
+gcc -shared -o manager.dll backend.c sha256.c
 
 
 ## ▶️ Run

@@ -35,10 +35,6 @@ Encryption algorithm is simplified (XOR).
 ## 🛠️ Build C core
 gcc -shared -o manager.dll backend.c sha256.c
 
-
-## ▶️ Run
-python GUI.py
-
 ## ⚠️ Disclaimer
 
 This project is for educational purposes.

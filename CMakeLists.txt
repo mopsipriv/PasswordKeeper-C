@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project(passwordkeep LANGUAGES C)
 
 add_executable(passwordkeep main.c
-    sha256.c)
+    sha256.c
+    encryptor.c)
 
 include(GNUInstallDirs)
 install(TARGETS passwordkeep

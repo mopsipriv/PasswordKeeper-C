@@ -18,12 +18,8 @@ try:
     c_lib.check_master_key.restype = ctypes.c_int
     c_lib.randomPasswordGeneration.argtypes = [ctypes.c_int, ctypes.c_char_p]
 
-    # --- Добавление определений для блочного шифрования ---
-    # Создаем типы для массивов: 2 элемента для блока и 4 для ключа
     uint32_2 = ctypes.c_uint32 * 2
     uint32_4 = ctypes.c_uint32 * 4
-    
-    # Регистрируем аргументы функций из DLL
     c_lib.encrypt_block.argtypes = [ctypes.POINTER(uint32_2), ctypes.POINTER(uint32_4)]
     c_lib.decrypt_block.argtypes = [ctypes.POINTER(uint32_2), ctypes.POINTER(uint32_4)]
 
@@ -32,17 +28,14 @@ except Exception as e:
     print(f"Error of C: {e}")
     messagebox.showerror("Error", "Not founded manager.dll!")
 
-# --- Вспомогательные функции для работы с блоками ---
-
 def tea_encrypt_string(plain_text):
     """Шифрует строку, разбивая её на блоки по 8 байт (2x32 бит)."""
     if not c_lib: return plain_text
-    
-    # Ключ (должен совпадать с тем, что в C или генерироваться из мастер-ключа)
+
     key = uint32_4(0x45415449, 0x4E475041, 0x5353574F, 0x52445321) 
     
     data = plain_text.encode('utf-8')
-    # Дополняем данные до кратности 8 байтам (PKCS7-like padding)
+
     pad_len = 8 - (len(data) % 8)
     data += bytes([pad_len] * pad_len)
     
@@ -53,12 +46,11 @@ def tea_encrypt_string(plain_text):
         v1 = int.from_bytes(chunk[4:8], 'little')
         block = uint32_2(v0, v1)
         c_lib.encrypt_block(ctypes.byref(block), ctypes.byref(key))
-        # Сохраняем как кортеж чисел для корректного сохранения в файл через ваш DELIMITER
         result.append((block[0], block[1]))
     return str(result)
 
 def tea_decrypt_string(encrypted_str):
-    """Дешифрует строку, представленную в виде списка кортежей (блоков)."""
+    """Denctryption"""
     if not c_lib: return encrypted_str
     
     key = uint32_4(0x45415449, 0x4E475041, 0x5353574F, 0x52445321)
@@ -73,7 +65,6 @@ def tea_decrypt_string(encrypted_str):
             decrypted_bytes.extend(block[0].to_bytes(4, 'little'))
             decrypted_bytes.extend(block[1].to_bytes(4, 'little'))
             
-        # Убираем padding (последний байт указывает количество дополненных байт)
         pad_len = decrypted_bytes[-1]
         if 0 < pad_len <= 8:
             decrypted_bytes = decrypted_bytes[:-pad_len]
@@ -243,7 +234,6 @@ def mainApp():
                 messagebox.showerror("Error", "DLL doesnt work.")
                 return
 
-            # ПРИМЕНЕНИЕ БЛОЧНОГО ШИФРОВАНИЯ
             encrypted_data = tea_encrypt_string(password)
 
             i = len(treev.get_children())

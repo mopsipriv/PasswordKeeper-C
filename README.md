@@ -60,7 +60,7 @@ python GUI.py
 ## 🖥️ Screenshots
 ![Login](screenshots/1.png)
 ![Master-key](screenshots/2.png)
-![Main](screenshots/4.png)
+![Main](screenshots/3.png)
 ![Add Password](screenshots/4.png)
 
 ## 🛠️ Build C core
